@@ -1,0 +1,19 @@
+{
+  "name": "STORMBLADE ⚡ Lightning Sword Arena",
+  "short_name": "STORMBLADE",
+  "description": "Hurl your lightning sword, blink to it, and cut down the beasts of the storm. Offline Action Arena by Picksaw Studio.",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05060f",
+  "theme_color": "#05060f",
+  "categories": ["games", "action", "arcade"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
