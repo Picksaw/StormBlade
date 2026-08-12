@@ -1,27 +1,15 @@
 name: Build & Deploy to GitHub Pages
 
-# Builds STORMBLADE and publishes dist/ to GitHub Pages on every push to main.
-#
-# ── ONE-TIME SETUP ────────────────────────────────────────────────
-# 1. Push this repo to GitHub.
-# 2. Repo → Settings → Pages → "Build and deployment"
-#      Source:  GitHub Actions      (NOT "Deploy from a branch")
-# 3. Push to main. The Actions tab will show the build.
-# 4. Your game goes live at:
-#      https://Picksaw.github.io/StormBlade/
-# ──────────────────────────────────────────────────────────────────
-
 on:
   push:
     branches: [main, master]
-  workflow_dispatch: # lets you re-deploy manually from the Actions tab
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# never let two deploys race each other
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -29,6 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,7 +25,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -45,16 +34,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      # The game is a single self-contained index.html, so it works from any
-      # sub-path. This copy makes client-side refreshes resolve too.
       - name: Add 404 fallback
         run: cp dist/index.html dist/404.html
 
-      # Stops GitHub Pages from running Jekyll over the output
       - name: Disable Jekyll
         run: touch dist/.nojekyll
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -62,9 +48,11 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
