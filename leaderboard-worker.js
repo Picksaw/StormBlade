@@ -166,6 +166,8 @@ export default {
         const arr = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === 'string').slice(0, 200) : []);
         const incoming = {
           coins: Math.max(0, Math.min(99_999_999, Math.floor(Number(p.coins) || 0))),
+          // gems are now properly copied and sanitized on the server
+          gems: Math.max(0, Math.min(99_999_999, Math.floor(Number(p.gems) || 0))),
           hero: String(p.hero || 'storm').slice(0, 40),
           sword: String(p.sword || 'storm-blade').slice(0, 40),
           map: String(p.map || 'storm').slice(0, 40),
@@ -181,6 +183,7 @@ export default {
           ? {
               ...incoming,
               coins: Math.max(old.coins || 0, incoming.coins),
+              gems: Math.max(old.gems || 0, incoming.gems),
               ownedHeroes: [...new Set([...(old.ownedHeroes || []), ...incoming.ownedHeroes])],
               ownedSwords: [...new Set([...(old.ownedSwords || []), ...incoming.ownedSwords])],
               ownedMaps: [...new Set([...(old.ownedMaps || []), ...incoming.ownedMaps])],
