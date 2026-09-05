@@ -9,8 +9,8 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
     <title>STORMBLADE ⚡ Lightning Sword Arena — Picksaw Studio</title>
   </head>
   <body>
@@ -18,9 +18,10 @@
     <!-- Telegram Mini App SDK (safe no-op outside Telegram) -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-      if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      var isNative = !!(window.Capacitor || navigator.userAgent.indexOf('Electron') !== -1);
+      if ('serviceWorker' in navigator && location.protocol !== 'file:' && !isNative) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+          navigator.serviceWorker.register("./sw.js").catch(() => {});
         });
       }
     </script>

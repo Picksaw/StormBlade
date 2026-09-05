@@ -67,21 +67,23 @@ Then drag **only `dist/index.html`** onto any of these:
 
 ---
 
-## 4. Android APK
+## 4. Native apps (Android APK / Windows EXE)
 
-**Fastest:** open the site in Chrome on Android → ⋮ menu → *Install app*.
+Both are wired up and buildable — see **[BUILD_APPS.md](BUILD_APPS.md)** for the
+full guide.
 
-**Shareable .apk:** paste your URL into [PWABuilder.com](https://www.pwabuilder.com/)
-→ Build → Android → Download.
+**Quickest route (no local toolchain needed):** GitHub → Actions →
+*Build APK & EXE* → Run workflow. Download the `.apk` and `.exe` from the run's
+Artifacts. Pushing a `v*` tag also publishes them to a Release.
 
-**Native build:** Capacitor is preconfigured (`capacitor.config.ts`, appId
-`com.picksaw.stormblade`):
+**Locally:**
 ```bash
-npm run build
-npx cap add android
-npx cap sync android
-npx cap open android
+npm run android:apk   # needs JDK 21 + Android SDK
+npm run win:exe       # needs Node; produces installer + portable exe in release/
 ```
+
+**No-build alternatives:** open the site in Chrome on Android → ⋮ → *Install app*,
+or paste the URL into [PWABuilder.com](https://www.pwabuilder.com/) → Android.
 
 ---
 

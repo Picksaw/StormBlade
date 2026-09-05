@@ -60,12 +60,24 @@ web_modules/
 # Output directory of Bundler
 .parcel-cache
 dist
+dist-app
 dist-ssr
 dist-capacitor
-android
 ios
 out
 build
+release
+
+# Capacitor Android: project is committed, build output is not
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+android/app/release/
+*.keystore
+*.jks
 
 # IDEs and editors
 .idea/

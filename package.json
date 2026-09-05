@@ -1,12 +1,21 @@
 {
-  "name": "react-vite-tailwind",
+  "name": "stormblade",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:app": "cross-env APP_TARGET=app vite build",
+    "android:add": "npm run build:app && npx cap add android",
+    "android:sync": "npm run build:app && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
+    "android:apk:release": "npm run android:sync && cd android && ./gradlew assembleRelease",
+    "electron:dev": "npm run build:app && electron .",
+    "win:exe": "npm run build:app && electron-builder --win --publish never",
+    "linux:app": "npm run build:app && electron-builder --linux AppImage --publish never"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
@@ -23,9 +32,64 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
+    "cross-env": "^10.1.0",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
     "vite": "7.3.2",
     "vite-plugin-singlefile": "2.3.0"
+  },
+  "description": "STORMBLADE — Lightning Sword Arena by Picksaw Studio",
+  "author": "Picksaw Studio",
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.picksaw.stormblade",
+    "productName": "STORMBLADE",
+    "copyright": "Copyright © Picksaw Studio",
+    "directories": {
+      "output": "release",
+      "buildResources": "electron"
+    },
+    "files": [
+      "electron/**/*",
+      "dist-app/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "electron/icon.png",
+      "artifactName": "STORMBLADE-${version}-${os}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "STORMBLADE"
+    },
+    "portable": {
+      "artifactName": "STORMBLADE-${version}-portable.exe"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Game",
+      "icon": "electron/icon.png"
+    }
   }
 }

@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.picksaw.stormblade',
   appName: 'STORMBLADE',
-  webDir: 'dist',
+  webDir: 'dist-app',
   server: {
     androidScheme: 'https',
     cleartext: true
