@@ -1,0 +1,122 @@
+name: Build APK & EXE
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci || npm install
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+
+      - name: Build web assets (app target)
+        run: npm run build:app
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build debug APK
+        run: chmod +x android/gradlew && cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Build unsigned release APK
+        run: cd android && ./gradlew assembleRelease --no-daemon
+
+      - name: Sign release APK
+        id: sign
+        run: |
+          set -e
+          UNSIGNED=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n1)
+          [ -z "$UNSIGNED" ] && { echo "no release apk"; exit 0; }
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n1)
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > ks.jks
+            STOREPASS='${{ secrets.ANDROID_KEYSTORE_PASSWORD }}'
+            KEYALIAS='${{ secrets.ANDROID_KEY_ALIAS }}'
+            KEYPASS='${{ secrets.ANDROID_KEY_PASSWORD }}'
+          else
+            echo "No release keystore secret found — generating a throwaway debug-grade key."
+            keytool -genkeypair -v -keystore ks.jks -alias stormblade -keyalg RSA \
+              -keysize 2048 -validity 10000 -storepass stormblade -keypass stormblade \
+              -dname "CN=Picksaw Studio, O=Picksaw, C=US"
+            STOREPASS=stormblade; KEYALIAS=stormblade; KEYPASS=stormblade
+          fi
+          "$BT/zipalign" -p -f 4 "$UNSIGNED" aligned.apk
+          "$BT/apksigner" sign --ks ks.jks --ks-pass "pass:$STOREPASS" \
+            --ks-key-alias "$KEYALIAS" --key-pass "pass:$KEYPASS" \
+            --out STORMBLADE-release.apk aligned.apk
+          rm -f ks.jks aligned.apk
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/debug/*.apk out/STORMBLADE-debug.apk || true
+          cp STORMBLADE-release.apk out/ || true
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stormblade-android
+          path: out/*.apk
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/*.apk
+
+  windows:
+    name: Windows EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build installer + portable exe
+        run: npm run win:exe
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stormblade-windows
+          path: |
+            release/*.exe
+            release/*.blockmap
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.exe
